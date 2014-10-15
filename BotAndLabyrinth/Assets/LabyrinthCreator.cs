@@ -19,6 +19,10 @@ public class LabyrinthCreator : MonoBehaviour {
 					if (i!=0 && j!=0 && k!=0 && i!=side_size-1 && j!=side_size-1 && k!=side_size-1) 
 						Labyrinth[i,j,k] = Random.Range(0,2);
 					else Labyrinth[i,j,k] = 1;
+		for (int i = 1; i<4; i++)
+			for (int j = 1; j<4; j++)
+				for (int k = 1; k<4; k++)
+					Labyrinth[i,j,k] = 0;
 	}
 	
 	void GenerateBorders()
@@ -48,8 +52,8 @@ public class LabyrinthCreator : MonoBehaviour {
 	void Start () {
 	
 	
-		//GenerateLabyrinth();
-		GenerateBorders();			
+		GenerateLabyrinth();
+		//GenerateBorders();			
 		BuildLabyrinth();
 		
 	}
