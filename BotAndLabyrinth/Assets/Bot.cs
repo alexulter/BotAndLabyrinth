@@ -3,7 +3,7 @@ using System.Collections;
 
 //public enum BotState {Idle, Exploring, Pathfinding};
 public class Bot : MonoBehaviour {
-
+	
 	int[,,] LabyrinthMap;
 	private int side_size;
 	bool isHit;
@@ -79,10 +79,11 @@ public class Bot : MonoBehaviour {
 	{
 		Vector3 aim = new Vector3(0,0,0);
 		if (explorable.Count > 0) aim = (Vector3)explorable[0];
-		Debug.Log("Going to Aim: "+aim.ToString());
+		else aim = transform.position;
+		//Debug.Log("Aim is set to: "+aim.ToString());
 		if (!isPFWorking && aim!=transform.position) StartPathFinding(aim);
 		else if (PF != null && PF.isFinished) PFNextMove();
-		else Debug.Log("nothing to to about going");
+		else Debug.Log("nothing to do about going anywhere");
 	}
 	
 	void PFNextMove()
@@ -92,7 +93,6 @@ public class Bot : MonoBehaviour {
 		transform.position = (Vector3)PF.ThePath[1];
 		isPFWorking = false;
 		Destroy(PF.gameObject);
-		LookAround();
 	}
 	
 	void StartPathFinding(Vector3 aim)
@@ -124,11 +124,11 @@ public class Bot : MonoBehaviour {
 			RotateRight();
 			EchoLocate();
 		}
-		for (int i = 0; i<4; i++)
-		{
-			RotateUp();
-			EchoLocate();
-		}
+//		for (int i = 0; i<4; i++)
+//		{
+//			RotateUp();
+//			EchoLocate();
+//		}
 		
 	}
 	void RotateUp()
@@ -137,35 +137,44 @@ public class Bot : MonoBehaviour {
 	}
 	void EchoLocate()
 	{
-		RaycastHit hit;
+		
 		Vector3 fwd = transform.TransformDirection(Vector3.forward * Time.deltaTime);
+		Vector3 up = transform.TransformDirection(Vector3.up * Time.deltaTime);
+		Vector3 dwn = transform.TransformDirection(Vector3.down * Time.deltaTime);
 		if (Physics.Raycast(transform.position, fwd, distanceOfView))
 			isHit = true;
 		else isHit = false;
-			int axis = 0;
-			//Debug.Log("Raycast");
-			if (Physics.Raycast(transform.position, fwd, out hit))
-					{
-					for (int i = 0; i<3; i++)
-						if ((int)(transform.position - hit.transform.position)[i] != 0) axis = i;
-					Vector3 a = new Vector3(0,0,0);
-					if (transform.position[axis] < hit.transform.position[axis]) a[axis] = 1;
-					else if (transform.position[axis] > hit.transform.position[axis]) a[axis] = -1;
-					else a[axis] = 0;
-					for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
-						{
-						//Debug.Log("Raycast: Scanning: "+b.ToString()+" --> "+LabyrinthMap[(int)b.x,(int)b.y,(int)b.z]);
-						if (LabyrinthMap[(int)b.x,(int)b.y,(int)b.z] == -1) 
-							{
-							LabyrinthMap[(int)b.x, (int)b.y, (int)b.z] = 0;
-							if (!explorable.Contains(b))
-								explorable.Add(b);
-							}
-						}
-					Vector3 c = hit.transform.position;
-					LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] = 1;
-					}
-
+		RaycastInDirection(fwd);
+		RaycastInDirection(up);
+		RaycastInDirection(dwn);
+	}
+	
+	void RaycastInDirection(Vector3 direction)
+	{
+		RaycastHit hit;
+		int axis = 0;
+		//Debug.Log("Raycast");
+		if (Physics.Raycast(transform.position, direction, out hit))
+		{
+			for (int i = 0; i<3; i++)
+				if ((int)(transform.position - hit.transform.position)[i] != 0) axis = i;
+			Vector3 a = new Vector3(0,0,0);
+			if (transform.position[axis] < hit.transform.position[axis]) a[axis] = 1;
+			else if (transform.position[axis] > hit.transform.position[axis]) a[axis] = -1;
+			else a[axis] = 0;
+			for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
+			{
+				//Debug.Log("Raycast: Scanning: "+b.ToString()+" --> "+LabyrinthMap[(int)b.x,(int)b.y,(int)b.z]);
+				if (LabyrinthMap[(int)b.x,(int)b.y,(int)b.z] == -1) 
+				{
+					LabyrinthMap[(int)b.x, (int)b.y, (int)b.z] = 0;
+					if (!explorable.Contains(b))
+						explorable.Add(b);
+				}
+			}
+			Vector3 c = hit.transform.position;
+			LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] = 1;
+		}
 	}
 	void MoveFwd()
 	{
