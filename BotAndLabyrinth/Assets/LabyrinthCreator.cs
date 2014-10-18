@@ -49,9 +49,19 @@ public class LabyrinthCreator : MonoBehaviour {
 					
 	}
 	
+	void GetSettings()
+	{
+		GameObject UIgo = GameObject.Find("UIManager");
+		if (UIgo != null) 
+			{
+			UIManager UI = UIgo.GetComponent<UIManager>();
+			side_size = UI.side_size;
+			}
+	}
+	
 	void Start () {
 	
-	
+		GetSettings();
 		GenerateLabyrinth();
 		//GenerateBorders();			
 		BuildLabyrinth();

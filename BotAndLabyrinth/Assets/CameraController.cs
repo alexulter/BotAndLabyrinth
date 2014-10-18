@@ -18,7 +18,8 @@ public class CameraController : MonoBehaviour {
 	
 public float move_speed = 5f;
 void Update()
-{
+{	
+	if (Input.GetKey(KeyCode.Escape)) Application.LoadLevel("StartingScene");
 	if (Input.GetKey(KeyCode.W)) transform.Translate(Vector3.forward*move_speed*Time.deltaTime);
 	if (Input.GetKey(KeyCode.S)) transform.Translate(Vector3.back*move_speed*Time.deltaTime);
 	if (Input.GetKey(KeyCode.A)) transform.Translate(Vector3.left*move_speed*Time.deltaTime);
