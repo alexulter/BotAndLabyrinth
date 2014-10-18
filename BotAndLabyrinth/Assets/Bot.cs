@@ -186,12 +186,13 @@ public class Bot : MonoBehaviour {
 	}
 	
 	void OnGUI()
-	{
-		GUI.Box (new Rect (10,10,50,25), isHit.ToString());
-		GUI.Box (new Rect (10,40,150,25), "position: "+transform.position.ToString());
-		GUI.Box (new Rect (10,70,150,25), "explorable cells: "+explorable.Count.ToString());
-		GUI.Box (new Rect (10,100,150,25), "State: "+Move.State.ToString());
-		if (Move.State == Action.Movement) GUI.Box (new Rect (10,130,200,25), "Going to: "+Move.aim_position.ToString());
+	{	
+		//GUI.Box (new Rect (10,10,250,25), "view depth= "+"  "+" ( use keys [ and ] )");
+		GUI.Box (new Rect (10,40,150,25), "FaceToWall?    "+isHit.ToString());
+		GUI.Box (new Rect (10,70,150,25), "position: "+transform.position.ToString());
+		GUI.Box (new Rect (10,100,150,25), "explorable cells: "+explorable.Count.ToString());
+		GUI.Box (new Rect (10,130,150,25), "State: "+Move.State.ToString());
+		if (Move.State == Action.Movement) GUI.Box (new Rect (10,160,200,25), "Going to: "+Move.aim_position.ToString());
 	}
 
 	void RotateUp()

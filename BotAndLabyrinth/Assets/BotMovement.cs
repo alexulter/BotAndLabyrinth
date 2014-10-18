@@ -9,10 +9,11 @@ public class BotMovement : MonoBehaviour {
 	private Quaternion aim_rotation;
 	public float speed = 3f;
 	public float rotation_speed = 300f;
-	private float angle;
+	private float angle = 0;
 	//private Bot brain;
 	private Vector3 v;
 	private Quaternion initial_rotation;
+	private float distance = 0;
 	
 	
 	void Start()
@@ -28,9 +29,12 @@ public class BotMovement : MonoBehaviour {
 	{
 		if (State == Action.Movement)
 		{	
-			if (Vector3.Distance(transform.position, aim_position) < 0.1f*speed/3f) 
+			Vector3 dist_delta = speed*v.normalized*Time.deltaTime;
+			distance += dist_delta.magnitude;
+			if (distance >= 0.9f)
 			{
 				transform.position = aim_position;
+				distance = 0;
 				State = Action.None;
 			}
 			else
@@ -38,16 +42,17 @@ public class BotMovement : MonoBehaviour {
 				//v = Vector3.Normalize(v);
 				//transform.position = aim_position;
 				//transform.position += speed*v.normalized*Time.deltaTime;
-				transform.Translate(speed*v.normalized*Time.deltaTime, Space.World);
+				transform.Translate(dist_delta, Space.World);
 			}
 			//Debug.Log("position: "+transform.position.ToString()+" v= "+v.normalized.ToString());
 		}
 		if (State == Action.Rotation)
 		{
+			
 			float angle_delta = rotation_speed*Time.deltaTime;
 			angle += angle_delta;
 			Debug.Log("angle: "+angle.ToString());
-			if (Mathf.Abs(angle - 90f) < 10f*speed/3f) 
+			if (angle > 85f) 
 			{
 			//transform.Rotate(Vector3.up, 90f-angle+angle_delta);
 			transform.rotation = initial_rotation * Quaternion.Euler(0,90,0);
@@ -64,6 +69,7 @@ public class BotMovement : MonoBehaviour {
 	{
 		State = Action.Rotation;
 		initial_rotation = transform.rotation;
+		aim_rotation = initial_rotation * Quaternion.Euler(0,90,0);
 		//transform.Rotate(Vector3.up, 90);
 		//State = Action.None;
 		//State = Action.Rotation;
