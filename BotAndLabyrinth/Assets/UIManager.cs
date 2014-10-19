@@ -10,6 +10,11 @@ public class UIManager : MonoBehaviour {
 	public float speed;
 	public Slider SideSizeSlider;
 	public Slider RobotSpeedSlider;
+	public Toggle MarkingToggle;
+	[System.NonSerialized]
+	public bool isMarking = true;
+	public Text OutputSpeed;
+	public Text OutputSize;
 	
 	
 	void Awake()
@@ -27,10 +32,16 @@ public class UIManager : MonoBehaviour {
 	public void SetSize()
 	{
 		side_size = (int)SideSizeSlider.value;
+		OutputSize.text = side_size.ToString();
 	}
 	public void SetSpeed()
 	{
 		speed = RobotSpeedSlider.value;
+		OutputSpeed.text = speed.ToString();
+	}
+	public void SetMarking()
+	{
+		isMarking = MarkingToggle.isOn;
 	}
 
 }

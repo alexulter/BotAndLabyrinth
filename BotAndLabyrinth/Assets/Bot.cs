@@ -9,6 +9,7 @@ public class Bot : MonoBehaviour {
 	public float distanceOfView = 0.5f;
 	ArrayList explorable = new ArrayList();
 	public GameObject CubePref;
+	public GameObject MarkedCubePref;
 	Pathfinding PF;
 	bool isPFWorking = false;
 	ArrayList MapBlocks = new ArrayList();
@@ -18,9 +19,12 @@ public class Bot : MonoBehaviour {
 	private bool isUpdating = false;
 	private Object BotImageInstance = null;
 	public GameObject BotImage;
+	public Object FinishScreen;
+	private bool isMarking = true;
 	
-	
-	void Awake() {Move = gameObject.AddComponent<BotMovement>();}
+	void Awake() {
+	Move = gameObject.AddComponent<BotMovement>();
+	}
 	
 	void Start () 
 	{
@@ -100,6 +104,7 @@ public class Bot : MonoBehaviour {
 		{
 			UIManager UI = UIgo.GetComponent<UIManager>();
 			speed = UI.speed;
+			isMarking = UI.isMarking;
 		}
 		if (speed > 2) 
 		{
@@ -143,7 +148,11 @@ public class Bot : MonoBehaviour {
 	{
 		Vector3 aim = new Vector3(0,0,0);
 		if (explorable.Count > 0) aim = (Vector3)explorable[0];
-		else aim = transform.position;
+		else 
+		{
+			aim = transform.position;
+			if (FinishScreen != null) Instantiate(FinishScreen);
+		}
 		//Debug.Log("Aim is set to: "+aim.ToString());
 		if (!isPFWorking && aim!=transform.position) StartPathFinding(aim);
 		else if (PF != null && PF.isFinished) PFNextMove();
@@ -158,8 +167,8 @@ public class Bot : MonoBehaviour {
 		Vector3 v = (Vector3)PF.ThePath[1];
 		//if (LabyrinthMap[(int)v.x,(int)v.y,(int)v.z] == -1) RotateV(v);
 		//else 
-		if (isSmoothMovement) Move.StepTo((Vector3)PF.ThePath[1]);
-		else transform.position = ((Vector3)PF.ThePath[1]);
+		if (isSmoothMovement) Move.StepTo(v);
+		else transform.position = v;
 		isPFWorking = false;
 		Destroy(PF.gameObject);
 	}
@@ -226,6 +235,11 @@ public class Bot : MonoBehaviour {
 				}
 			}
 			Vector3 c = hit.transform.position;
+			if (isMarking && LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] == -1) 
+				{
+				Destroy(hit.transform.gameObject);
+				Instantiate(MarkedCubePref, c, Quaternion.identity);
+				}
 			LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] = 1;
 		}
 	}

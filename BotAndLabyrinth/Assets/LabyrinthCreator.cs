@@ -74,7 +74,7 @@ public class LabyrinthCreator : MonoBehaviour {
 	
 	void OnGUI()
 	{
-		GUI.Box (new Rect (10,10,255,25), "view depth= "+noDrawDistance.ToString()+" ( use keys [ and ] to change)"); 
+		GUI.Box (new Rect (10,10,260,25), "view depth= "+noDrawDistance.ToString()+" ( use keys [ and ] to change)"); 
 	}
 	
 	void Start () {

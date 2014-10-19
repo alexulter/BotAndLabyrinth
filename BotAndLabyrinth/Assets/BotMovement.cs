@@ -6,7 +6,7 @@ public class BotMovement : MonoBehaviour {
 	
 	public Action State = Action.None;
 	public Vector3 aim_position;
-	private Quaternion aim_rotation;
+	//private Quaternion aim_rotation;
 	public float speed = 3f;
 	public float rotation_speed = 300f;
 	private float angle = 0;
@@ -69,7 +69,7 @@ public class BotMovement : MonoBehaviour {
 	{
 		State = Action.Rotation;
 		initial_rotation = transform.rotation;
-		aim_rotation = initial_rotation * Quaternion.Euler(0,90,0);
+		//aim_rotation = initial_rotation * Quaternion.Euler(0,90,0);
 		//transform.Rotate(Vector3.up, 90);
 		//State = Action.None;
 		//State = Action.Rotation;
