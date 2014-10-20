@@ -20,28 +20,33 @@ public class Pathfinding : MonoBehaviour {
 	[System.NonSerialized]
 	public ArrayList ThePath;
 	
-	public int[,,] LabyrinthMap;
-	public int side_size = 10;
+	//public int[,,] LabyrinthMap;
+	public ArrayList MazeMap;
+	public ArrayList MazeCells;
+	//public int side_size = 10;
 	public GameObject CubePref;
 	
 //	Vector3 aim_direction = aim_pos - init_pos;
 	
-	private void GenerateLabyrinth()
-	{
-		LabyrinthMap = new int[side_size,side_size,side_size];
-		for (int i = 0; i < side_size; i++)
-			for (int j = 0; j < side_size; j++)
-				for (int k = 0; k < side_size; k++)
-					LabyrinthMap[i,j,k] = 0;
-	}
+//	private void GenerateLabyrinth()
+//	{
+//		LabyrinthMap = new int[side_size,side_size,side_size];
+//		for (int i = 0; i < side_size; i++)
+//			for (int j = 0; j < side_size; j++)
+//				for (int k = 0; k < side_size; k++)
+//					LabyrinthMap[i,j,k] = 0;
+//	}
 	
 		public bool isPassable(Vector3 cell)
 		{
-		if (cell.x < 0 || cell.y < 0 || cell.z < 0) return false;
-		else if (cell.x > side_size-1 || cell.y > side_size-1 || cell.z > side_size-1) return false;
-		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 1) return false;
-		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 11) return false;
-		else return true;
+//		if (cell.x < 0 || cell.y < 0 || cell.z < 0) return false;
+//		else if (cell.x > side_size-1 || cell.y > side_size-1 || cell.z > side_size-1) return false;
+//		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 1) return false;
+//		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 11) return false;
+//		else return true;
+		bool isContains = MazeMap.Contains(cell);
+		if (!isContains || (int)MazeCells[MazeMap.IndexOf(cell)] == 0) return true;
+		else return false;
 		}
 		public bool inUse(Vector3 cell)
 		{

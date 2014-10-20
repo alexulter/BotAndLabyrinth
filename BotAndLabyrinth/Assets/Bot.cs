@@ -3,8 +3,9 @@ using System.Collections;
 
 public class Bot : MonoBehaviour {
 	
-	int[,,] LabyrinthMap;
-	private int side_size = -1;
+	private ArrayList MazeMap = new ArrayList();
+	private ArrayList MazeCells = new ArrayList();
+	private int freespace = -1;
 	bool isHit;
 	public float distanceOfView = 0.5f;
 	ArrayList explorable = new ArrayList();
@@ -29,16 +30,13 @@ public class Bot : MonoBehaviour {
 	void Start () 
 	{
 	SetSettings();
-	if (side_size < 0) 
+	if (freespace < 0) 
 		{	
 		Destroy(gameObject);
 		Debug.LogError("The Bot script couldn't get size of the maze");
 		}
-	LabyrinthMap = new int[side_size+1,side_size+1,side_size+1];
-	for (int i = 0; i < side_size; i++)
-		for (int j = 0; j < side_size; j++)
-			for (int k = 0; k < side_size; k++)
-				LabyrinthMap[i,j,k] = -1;
+	MazeMap.Add (transform.position);
+	MazeCells.Add((int)0);
 	EchoLocate();
 	if (speed <= 2)InvokeRepeating("MyUpdate", 0f, 2f/speed/speed);
 	else isUpdating = true;
@@ -48,7 +46,7 @@ public class Bot : MonoBehaviour {
 	{
 		if (isUpdating) MyUpdate();
 		DestroyImmediate(BotImageInstance);
-		BotImageInstance = Instantiate(BotImage, transform.position + new Vector3(side_size+5,0,0), transform.rotation);
+		BotImageInstance = Instantiate(BotImage, transform.position + new Vector3(freespace,0,0), transform.rotation);
 	}
 	
 	void MyUpdate()
@@ -97,7 +95,7 @@ public class Bot : MonoBehaviour {
 	void SetSettings()
 	{
 		GameObject go = GameObject.Find("LabyrinthCreator");
-		if (go != null) side_size = go.GetComponent<LabyrinthCreator>().side_size;
+		if (go != null) freespace = go.GetComponent<LabyrinthCreator>().side_size + 5;
 		
 		GameObject UIgo = GameObject.Find("UIManager");
 		if (UIgo != null) 
@@ -131,11 +129,11 @@ public class Bot : MonoBehaviour {
 				Vector3 v = new Vector3(0,0,0);
 				v[i] = 1;
 				v+=cell;
-				if (LabyrinthMap[(int)v.x,(int)v.y,(int)v.z] == -1) NAcount++;
+				if (!MazeMap.Contains(v)) NAcount++;
 				v = new Vector3(0,0,0);
 				v[i] = -1;
 				v+=cell;
-				if (LabyrinthMap[(int)v.x,(int)v.y,(int)v.z] == -1) NAcount++;
+				if (!MazeMap.Contains(v)) NAcount++;
 			}
 			if (NAcount == 0) already_explored.Add (cell);
 		}
@@ -185,8 +183,8 @@ public class Bot : MonoBehaviour {
 		isPFWorking = true;
 		GameObject go = new GameObject("Pathfinding");
 		PF = go.AddComponent<Pathfinding>();
-		PF.side_size = side_size;
-		PF.LabyrinthMap = LabyrinthMap;
+		PF.MazeMap = MazeMap;
+		PF.MazeCells = MazeCells;
 		PF.init_pos = transform.position;
 		PF.aim_pos = aim;
 		Debug.Log ("Position: "+transform.position.ToString());
@@ -227,20 +225,22 @@ public class Bot : MonoBehaviour {
 			for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
 			{
 				//Debug.Log("Raycast: Scanning: "+b.ToString()+" --> "+LabyrinthMap[(int)b.x,(int)b.y,(int)b.z]);
-				if (LabyrinthMap[(int)b.x,(int)b.y,(int)b.z] == -1) 
+				if (!MazeMap.Contains(b))
 				{
-					LabyrinthMap[(int)b.x, (int)b.y, (int)b.z] = 0;
+					MazeMap.Add(b);
+					MazeCells.Add((int)0);
 					if (!explorable.Contains(b))
 						explorable.Add(b);
 				}
 			}
 			Vector3 c = hit.transform.position;
-			if (isMarking && LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] == -1) 
+			if (isMarking && !MazeMap.Contains(c)) 
 				{
 				Destroy(hit.transform.gameObject);
 				Instantiate(MarkedCubePref, c, Quaternion.identity);
 				}
-			LabyrinthMap[(int)c.x,(int)c.y,(int)c.z] = 1;
+			MazeMap.Add (c);
+			MazeCells.Add((int)1);
 		}
 	}
 //	void MoveFwd()
@@ -262,13 +262,12 @@ public class Bot : MonoBehaviour {
 	
 	void BuildMap()
 	{
-		for (int i = 0; i < side_size; i++)
-			for (int j = 0; j < side_size; j++)
-				for (int k = 0; k < side_size; k++)
-					if (LabyrinthMap[i,j,k] == 1 && !MapBlocks.Contains(new Vector3(i,j,k))) 
+foreach (Vector3 cell in MazeMap)
+					if ((int)MazeCells[MazeMap.IndexOf(cell)] == 1 && 
+						!MapBlocks.Contains(cell))
 						{
-						Instantiate(CubePref, new Vector3(i+side_size+5,j,k), Quaternion.identity);
-						MapBlocks.Add(new Vector3(i,j,k));
+						Instantiate(CubePref, new Vector3(cell.x+freespace,cell.y,cell.z), Quaternion.identity);
+						MapBlocks.Add(cell);
 						}
 
 	}
