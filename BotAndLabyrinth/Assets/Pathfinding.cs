@@ -21,8 +21,10 @@ public class Pathfinding : MonoBehaviour {
 	public ArrayList ThePath;
 	
 	//public int[,,] LabyrinthMap;
-	public ArrayList MazeMap;
-	public ArrayList MazeCells;
+//	public ArrayList MazeMap;
+//	public ArrayList MazeCells;
+	public ArrayList EmptySpaces = new ArrayList();
+	public ArrayList WallsConfig = new ArrayList();
 	//public int side_size = 10;
 	public GameObject CubePref;
 	
@@ -37,15 +39,32 @@ public class Pathfinding : MonoBehaviour {
 //					LabyrinthMap[i,j,k] = 0;
 //	}
 	
-		public bool isPassable(Vector3 cell)
+	int GetIndexFromDirection(Vector3 direction)
+	{
+		if ((int)direction.x >0) return 0;
+		else if ((int)direction.x <0) return 1;
+		else if ((int)direction.y >0) return 2;
+		else if ((int)direction.y <0) return 3;
+		else if ((int)direction.z >0) return 4;
+		else if ((int)direction.z <0) return 5;
+		else 
+		{
+			Debug.LogError("Direction To Index conversion error");
+			return -1;
+		}
+	}
+		
+		public bool isPassable(Vector3 fromCell, Vector3 direction)
 		{
 //		if (cell.x < 0 || cell.y < 0 || cell.z < 0) return false;
 //		else if (cell.x > side_size-1 || cell.y > side_size-1 || cell.z > side_size-1) return false;
 //		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 1) return false;
 //		else if (LabyrinthMap[(int)cell.x, (int)cell.y, (int)cell.z] == 11) return false;
 //		else return true;
-		bool isContains = MazeMap.Contains(cell);
-		if (!isContains || (int)MazeCells[MazeMap.IndexOf(cell)] == 0) return true;
+		Vector3 cell = fromCell + direction;
+		bool isContains = EmptySpaces.Contains(fromCell);
+		int index = GetIndexFromDirection(direction);
+		if (!isContains || ((int[])WallsConfig[EmptySpaces.IndexOf(fromCell)])[index] != 1) return true;
 		else return false;
 		}
 		public bool inUse(Vector3 cell)
@@ -106,7 +125,7 @@ public class Pathfinding : MonoBehaviour {
 		for (int i = 0; i < 6; i++) 
 		{
 			Vector3 newStep = cell + directions[i];
-			if (isPassable(newStep) && !inUse(newStep))
+			if (isPassable(cell, directions[i]) && !inUse(newStep))
 			{
 				//newWay = ((ArrayList)way.Clone()).Resize(ways_length+1);
 				ArrayList newWay = (ArrayList)way.Clone();

@@ -3,12 +3,20 @@ using System.Collections;
 
 public class Bot : MonoBehaviour {
 	
-	private ArrayList MazeMap = new ArrayList();
-	private ArrayList MazeCells = new ArrayList();
+	//----------
+	//DELETE
+//	private ArrayList explorable = new ArrayList();
+//	private ArrayList MazeMap = new ArrayList();
+//	private ArrayList MazeCells = new ArrayList();
+//	int axis = 0;
+	//---------
+	
+	private ArrayList EmptySpaces = new ArrayList();
+	private ArrayList WallsConfig = new ArrayList();
 	private int freespace = -1;
 	bool isHit;
 	public float distanceOfView = 0.5f;
-	ArrayList explorable = new ArrayList();
+	ArrayList ExplorableSpaces = new ArrayList();
 	public GameObject CubePref;
 	public GameObject MarkedCubePref;
 	Pathfinding PF;
@@ -35,8 +43,9 @@ public class Bot : MonoBehaviour {
 		Destroy(gameObject);
 		Debug.LogError("The Bot script couldn't get size of the maze");
 		}
-	MazeMap.Add (transform.position);
-	MazeCells.Add((int)0);
+	EmptySpaces.Add (transform.position);
+	WallsConfig.Add(new int[] {-1,-1,-1,-1,-1,-1});
+	ExplorableSpaces.Add(transform.position);
 	EchoLocate();
 	if (speed <= 2)InvokeRepeating("MyUpdate", 0f, 2f/speed/speed);
 	else isUpdating = true;
@@ -59,7 +68,7 @@ public class Bot : MonoBehaviour {
 		CheckExplorable();
 		//if (Move.State == Action.None) StartCoroutine(EchoLocate());
 		if (Move.State == Action.Idle)
-			if (explorable.Contains(transform.position)) 
+			if (ExplorableSpaces.Contains(transform.position)) 
 				RotateRight();
 		else GoToUnexplored();
 		//StartCoroutine(MyUpdateRoutine());
@@ -79,9 +88,9 @@ public class Bot : MonoBehaviour {
 	IEnumerator EchoLocate()
 	{
 		Move.State = Action.Exploring;
-		Vector3 fwd = transform.TransformDirection(Vector3.forward * Time.deltaTime);
-		Vector3 up = transform.TransformDirection(Vector3.up * Time.deltaTime);
-		Vector3 dwn = transform.TransformDirection(Vector3.down * Time.deltaTime);
+		Vector3 fwd = transform.TransformDirection(Vector3.forward);
+		Vector3 up = transform.TransformDirection(Vector3.up);
+		Vector3 dwn = transform.TransformDirection(Vector3.down);
 		if (Physics.Raycast(transform.position, fwd, distanceOfView))
 			isHit = true;
 		else isHit = false;
@@ -121,31 +130,25 @@ public class Bot : MonoBehaviour {
 	{
 		ArrayList already_explored = new ArrayList();
 		//Debug.Log("Explorable bl0cks1: "+explorable.Count.ToString());
-		foreach (Vector3 cell in explorable)
+		foreach (Vector3 cell in ExplorableSpaces)
 		{
+			int[] ddd = (int[])WallsConfig[EmptySpaces.IndexOf(cell)];
 			int NAcount = 0;
-			for (int i = 0; i<3; i++)
+			for (int i = 0; i<6; i++)
 			{
-				Vector3 v = new Vector3(0,0,0);
-				v[i] = 1;
-				v+=cell;
-				if (!MazeMap.Contains(v)) NAcount++;
-				v = new Vector3(0,0,0);
-				v[i] = -1;
-				v+=cell;
-				if (!MazeMap.Contains(v)) NAcount++;
+				if (ddd[i] == -1) NAcount++;
 			}
 			if (NAcount == 0) already_explored.Add (cell);
 		}
 		foreach (Vector3 cell in already_explored)
-			explorable.Remove(cell);
+			ExplorableSpaces.Remove(cell);
 		//Debug.Log("Explorable bl0cks2: "+explorable.Count.ToString());
 	}
 	
 	void GoToUnexplored()
 	{
 		Vector3 aim = new Vector3(0,0,0);
-		if (explorable.Count > 0) aim = (Vector3)explorable[0];
+		if (ExplorableSpaces.Count > 0) aim = (Vector3)ExplorableSpaces[0];
 		else 
 		{
 			aim = transform.position;
@@ -183,8 +186,10 @@ public class Bot : MonoBehaviour {
 		isPFWorking = true;
 		GameObject go = new GameObject("Pathfinding");
 		PF = go.AddComponent<Pathfinding>();
-		PF.MazeMap = MazeMap;
-		PF.MazeCells = MazeCells;
+		//PF.MazeMap = MazeMap;
+		//PF.MazeCells = MazeCells;
+		PF.EmptySpaces = EmptySpaces;
+		PF.WallsConfig = WallsConfig;
 		PF.init_pos = transform.position;
 		PF.aim_pos = aim;
 		Debug.Log ("Position: "+transform.position.ToString());
@@ -197,7 +202,7 @@ public class Bot : MonoBehaviour {
 		//GUI.Box (new Rect (10,10,250,25), "view depth= "+"  "+" ( use keys [ and ] )");
 		GUI.Box (new Rect (10,40,150,25), "FaceToWall?    "+isHit.ToString());
 		GUI.Box (new Rect (10,70,150,25), "position: "+transform.position.ToString());
-		GUI.Box (new Rect (10,100,150,25), "explorable cells: "+explorable.Count.ToString());
+		GUI.Box (new Rect (10,100,150,25), "explorable cells: "+ExplorableSpaces.Count.ToString());
 		GUI.Box (new Rect (10,130,150,25), "State: "+Move.State.ToString());
 		if (Move.State == Action.Movement) GUI.Box (new Rect (10,160,200,25), "Going to: "+Move.aim_position.ToString());
 	}
@@ -207,41 +212,76 @@ public class Bot : MonoBehaviour {
 		transform.Rotate(Vector3.left, 90);
 	}
 	
-	
+	int GetIndexFromDirection(Vector3 direction)
+	{
+		if ((int)direction.x >0) return 0;
+		else if ((int)direction.x <0) return 1;
+		else if ((int)direction.y >0) return 2;
+		else if ((int)direction.y <0) return 3;
+		else if ((int)direction.z >0) return 4;
+		else if ((int)direction.z <0) return 5;
+		else 
+		{
+		Debug.LogError("Direction To Index conversion error"+direction.ToString());
+		return -1;
+		}
+	}
 	
 	void RaycastInDirection(Vector3 direction)
 	{
 		RaycastHit hit;
-		int axis = 0;
-		//Debug.Log("Raycast");
-		if (Physics.Raycast(transform.position, direction, out hit))
-		{
-			for (int i = 0; i<3; i++)
-				if ((int)(transform.position - hit.transform.position)[i] != 0) axis = i;
-			Vector3 a = new Vector3(0,0,0);
-			if (transform.position[axis] < hit.transform.position[axis]) a[axis] = 1;
-			else if (transform.position[axis] > hit.transform.position[axis]) a[axis] = -1;
-			else a[axis] = 0;
-			for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
-			{
-				//Debug.Log("Raycast: Scanning: "+b.ToString()+" --> "+LabyrinthMap[(int)b.x,(int)b.y,(int)b.z]);
-				if (!MazeMap.Contains(b))
-				{
-					MazeMap.Add(b);
-					MazeCells.Add((int)0);
-					if (!explorable.Contains(b))
-						explorable.Add(b);
-				}
-			}
-			Vector3 c = hit.transform.position;
-			if (isMarking && !MazeMap.Contains(c)) 
-				{
-				Destroy(hit.transform.gameObject);
-				Instantiate(MarkedCubePref, c, Quaternion.identity);
-				}
-			MazeMap.Add (c);
-			MazeCells.Add((int)1);
+		//int axis = 0;
+//		int step = 1;
+//		for (int kkk = 0; kkk < 1000000; kkk++)
+//		{
+//			Physics.Raycast(transform.position, direction, step);
+//			
+//			step++;
+//		}
+		if (Physics.Raycast(transform.position, direction, 1f)) {
+		//draw wall
+			((int[]) WallsConfig[EmptySpaces.IndexOf(transform.position)])[GetIndexFromDirection(direction)] = 1;
 		}
+		else {
+			//add new cell
+			((int[]) WallsConfig[EmptySpaces.IndexOf(transform.position)])[GetIndexFromDirection(direction)] = 0;
+			Vector3 target = transform.position + direction.normalized;
+			if (!EmptySpaces.Contains(target))
+			{
+			EmptySpaces.Add(target);
+			WallsConfig.Add(new int[] {-1,-1,-1,-1,-1,-1});
+			ExplorableSpaces.Add (target);
+			}
+		} 
+		
+//		if (Physics.Raycast(transform.position, direction, out hit))
+//		{
+//		
+//			for (int i = 0; i<3; i++)
+//				if ((int)(transform.position - hit.transform.position)[i] != 0) axis = i;
+//			Vector3 a = new Vector3(0,0,0);
+//			if (transform.position[axis] < hit.transform.position[axis]) a[axis] = 1;
+//			else if (transform.position[axis] > hit.transform.position[axis]) a[axis] = -1;
+//			else a[axis] = 0;
+//			for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
+//			{
+//				if (!MazeMap.Contains(b))
+//				{
+//					MazeMap.Add(b);
+//					MazeCells.Add((int)0);
+//					if (!explorable.Contains(b))
+//						explorable.Add(b);
+//				}
+//			}
+//			Vector3 c = hit.transform.position;
+//			if (isMarking && !MazeMap.Contains(c)) 
+//				{
+//				Destroy(hit.transform.gameObject);
+//				Instantiate(MarkedCubePref, c, Quaternion.identity);
+//				}
+//			MazeMap.Add (c);
+//			MazeCells.Add((int)1);
+//		}
 	}
 //	void MoveFwd()
 //	{
@@ -262,13 +302,14 @@ public class Bot : MonoBehaviour {
 	
 	void BuildMap()
 	{
-foreach (Vector3 cell in MazeMap)
-					if ((int)MazeCells[MazeMap.IndexOf(cell)] == 1 && 
-						!MapBlocks.Contains(cell))
-						{
-						Instantiate(CubePref, new Vector3(cell.x+freespace,cell.y,cell.z), Quaternion.identity);
-						MapBlocks.Add(cell);
-						}
+//	foreach (Vector3 cell in EmptySpaces)
+//					for (int ddd =0; ddd<6; ddd++)
+//					if (((int)WallsConfig[EmptySpaces.IndexOf(cell)])[ddd] == 1 && 
+//						!MapBlocks.Contains(cell+))
+//						{
+//						Instantiate(CubePref, new Vector3(cell.x+freespace,cell.y,cell.z), Quaternion.identity);
+//						MapBlocks.Add(cell);
+//						}
 
 	}
 	
