@@ -3,14 +3,6 @@ using System.Collections;
 
 public class Bot : MonoBehaviour {
 	
-	//----------
-	//DELETE
-//	private ArrayList explorable = new ArrayList();
-//	private ArrayList MazeMap = new ArrayList();
-//	private ArrayList MazeCells = new ArrayList();
-//	int axis = 0;
-	//---------
-	
 	private ArrayList EmptySpaces = new ArrayList();
 	private ArrayList WallsConfig = new ArrayList();
 	private int freespace = -1;
@@ -66,24 +58,11 @@ public class Bot : MonoBehaviour {
 	}
 	void MyActions () {
 		CheckExplorable();
-		//if (Move.State == Action.None) StartCoroutine(EchoLocate());
 		if (Move.State == Action.Idle)
 			if (ExplorableSpaces.Contains(transform.position)) 
 				RotateRight();
 		else GoToUnexplored();
-		//StartCoroutine(MyUpdateRoutine());
 	}
-	
-	//	IEnumerator MyUpdateRoutine()
-	//	{
-	//	CheckExplorable();
-	//	if (Move.State == Action.None) StartCoroutine(EchoLocate());
-	//	if (Move.State == Action.None)
-	//		if (explorable.Contains(transform.position)) 
-	//			RotateRight();
-	//	else GoToUnexplored();
-	//	yield return 0;
-	//	}
 	
 	IEnumerator EchoLocate()
 	{
@@ -129,7 +108,6 @@ public class Bot : MonoBehaviour {
 	void CheckExplorable()
 	{
 		ArrayList already_explored = new ArrayList();
-		//Debug.Log("Explorable bl0cks1: "+explorable.Count.ToString());
 		foreach (Vector3 cell in ExplorableSpaces)
 		{
 			int[] ddd = (int[])WallsConfig[EmptySpaces.IndexOf(cell)];
@@ -142,8 +120,7 @@ public class Bot : MonoBehaviour {
 		}
 		foreach (Vector3 cell in already_explored)
 			ExplorableSpaces.Remove(cell);
-		//Debug.Log("Explorable bl0cks2: "+explorable.Count.ToString());
-	}
+		}
 	
 	void GoToUnexplored()
 	{
@@ -154,7 +131,6 @@ public class Bot : MonoBehaviour {
 			aim = transform.position;
 			if (FinishScreen != null) Instantiate(FinishScreen);
 		}
-		//Debug.Log("Aim is set to: "+aim.ToString());
 		if (!isPFWorking && aim!=transform.position) StartPathFinding(aim);
 		else if (PF != null && PF.isFinished) PFNextMove();
 		else Debug.LogWarning("nothing to do about going anywhere");
@@ -164,21 +140,13 @@ public class Bot : MonoBehaviour {
 	
 	void PFNextMove()
 	{
-		//Debug.Log("MovingTo: "+((Vector3)PF.ThePath[1]).ToString());
 		Vector3 v = (Vector3)PF.ThePath[1];
-		//if (LabyrinthMap[(int)v.x,(int)v.y,(int)v.z] == -1) RotateV(v);
-		//else 
 		if (isSmoothMovement) Move.StepTo(v);
 		else transform.position = v;
 		isPFWorking = false;
 		Destroy(PF.gameObject);
 	}
-//	void RotateV(Vector3 v)
-//	{
-//		if ((v - transform.position).normalized == Vector3.right) RotateRight();
-//		else if ((v - transform.position).normalized == Vector3.left) RotateLeft();
-//		else RotateLeft();
-//	}
+
 	void StartPathFinding(Vector3 aim)
 	{
 		Debug.Log("Starting PF");
@@ -186,8 +154,6 @@ public class Bot : MonoBehaviour {
 		isPFWorking = true;
 		GameObject go = new GameObject("Pathfinding");
 		PF = go.AddComponent<Pathfinding>();
-		//PF.MazeMap = MazeMap;
-		//PF.MazeCells = MazeCells;
 		PF.EmptySpaces = EmptySpaces;
 		PF.WallsConfig = WallsConfig;
 		PF.init_pos = transform.position;
@@ -199,7 +165,6 @@ public class Bot : MonoBehaviour {
 	
 	void OnGUI()
 	{	
-		//GUI.Box (new Rect (10,10,250,25), "view depth= "+"  "+" ( use keys [ and ] )");
 		GUI.Box (new Rect (10,40,150,25), "FaceToWall?    "+isHit.ToString());
 		GUI.Box (new Rect (10,70,150,25), "position: "+transform.position.ToString());
 		GUI.Box (new Rect (10,100,150,25), "explorable cells: "+ExplorableSpaces.Count.ToString());
@@ -230,24 +195,8 @@ public class Bot : MonoBehaviour {
 	void RaycastInDirection(Vector3 direction)
 	{
 		RaycastHit hit;
-		//int axis = 0;
-//		int step = 1;
-//		for (int kkk = 0; kkk < 1000000; kkk++)
-//		{
-//			Physics.Raycast(transform.position, direction, step);
-//			
-//			step++;
-//		}
-
-		//UNITY BUG HERE
 		int index = -1;
 		if (EmptySpaces.Contains(transform.position)) index = EmptySpaces.IndexOf(transform.position);
-//		else foreach (Vector3 itm in EmptySpaces)
-//			if (itm == transform.position) 
-//				{
-//				index = EmptySpaces.IndexOf(itm);
-//				Debug.LogWarning("UNITY BUG");
-//				}
 			
 		if (Physics.Raycast(transform.position, direction, 1f)) {
 		//draw wall
@@ -256,18 +205,10 @@ public class Bot : MonoBehaviour {
 		}
 		else {
 			//add new cell
-//			foreach (Vector3 itm in EmptySpaces)
-//				Debug.Log("a "+itm.ToString());
-//			Debug.Log("a transform"+transform.position.ToString());
-//			Debug.Log (EmptySpaces.IndexOf(transform.position).ToString()+
-//				" "+EmptySpaces.Contains(transform.position).ToString());
-			
 			((int[]) WallsConfig[index])[GetIndexFromDirection(direction)] = 0;
 			
 			Vector3 target = transform.position + new Vector3((int)direction.x, (int)direction.y,
 				(int)direction.z);
-			//Debug.Log("traget-Free"+target.ToString());
-			Debug.Log("direction norm"+direction.ToString());
 			if (!EmptySpaces.Contains(target))
 			{
 			EmptySpaces.Add(target);
@@ -277,52 +218,15 @@ public class Bot : MonoBehaviour {
 			}
 		} 
 		
-//		if (Physics.Raycast(transform.position, direction, out hit))
-//		{
-//		
-//			for (int i = 0; i<3; i++)
-//				if ((int)(transform.position - hit.transform.position)[i] != 0) axis = i;
-//			Vector3 a = new Vector3(0,0,0);
-//			if (transform.position[axis] < hit.transform.position[axis]) a[axis] = 1;
-//			else if (transform.position[axis] > hit.transform.position[axis]) a[axis] = -1;
-//			else a[axis] = 0;
-//			for (Vector3 b = transform.position+a; b!= hit.transform.position; b += a)
-//			{
-//				if (!MazeMap.Contains(b))
-//				{
-//					MazeMap.Add(b);
-//					MazeCells.Add((int)0);
-//					if (!explorable.Contains(b))
-//						explorable.Add(b);
-//				}
-//			}
-//			Vector3 c = hit.transform.position;
-//			if (isMarking && !MazeMap.Contains(c)) 
-//				{
-//				Destroy(hit.transform.gameObject);
-//				Instantiate(MarkedCubePref, c, Quaternion.identity);
-//				}
-//			MazeMap.Add (c);
-//			MazeCells.Add((int)1);
-//		}
 	}
-//	void MoveFwd()
-//	{
-//		Move.StepTo(transform.position + transform.forward.normalized);
-//		
-//	}
+
 	
 	void RotateRight()
 	{
 		if (isSmoothMovement) Move.RotateRight();
 		else transform.Rotate(Vector3.up, 90);
 	}
-//	void RotateLeft()
-//	{
-//		if (isSmoothMovement) Move.RotateLeft();
-//		else transform.Rotate(Vector3.up, -90);
-//	}
-	
+
 	void BuildMap()
 	{
 	foreach (Vector3 cell in EmptySpaces)
@@ -335,8 +239,7 @@ public class Bot : MonoBehaviour {
 						Instantiate(WallColoredPref, new Vector3(cell.x,cell.y,cell.z), GetRotationFromDirections(ddd));
 					MapBlocks.Add(((int)cell.x).ToString()+" "+
 				              ((int)cell.y).ToString()+" "+((int)cell.z).ToString()+" "+ddd.ToString());
-						//foreach (string item in MapBlocks)
-						//	Debug.Log("MapBlocks: "+item);
+
 						}
 
 	}

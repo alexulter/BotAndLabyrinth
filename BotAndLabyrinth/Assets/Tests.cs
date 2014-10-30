@@ -20,13 +20,6 @@ public class Tests : MonoBehaviour {
 		if (Physics.Raycast(transform.position, Vector3.forward, distance)) isHit = true;
 		else isHit = false;
 	
-//	while (!Physics.Raycast(transform.position, Vector3.forward))
-//	{
-//	
-//		
-//	}
-	
-	
 	}
 	void OnGUI()
 	{

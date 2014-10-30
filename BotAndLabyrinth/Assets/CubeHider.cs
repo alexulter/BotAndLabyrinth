@@ -12,7 +12,7 @@ public class CubeHider : MonoBehaviour {
 		ppp = gameObject.GetComponent<MeshRenderer>();
 	}
 	
-	// Update is called once per frame
+	
 	void Update () {
 		if ((transform.position - Camera.main.transform.position).magnitude <= Maze.noDrawDistance) 
 			ppp.enabled = false;
