@@ -51,7 +51,7 @@ public class BotMovement : MonoBehaviour {
 			
 			float angle_delta = rotation_speed*Time.deltaTime;
 			angle += angle_delta;
-			Debug.Log("angle: "+angle.ToString());
+			//Debug.Log("angle: "+angle.ToString());
 			if (angle > 85f) 
 			{
 			//transform.Rotate(Vector3.up, 90f-angle+angle_delta);

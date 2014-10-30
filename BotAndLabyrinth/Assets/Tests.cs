@@ -5,7 +5,15 @@ public class Tests : MonoBehaviour {
 
 	bool isHit = false;
 	public float distance = 1f;
-	// Update is called once per frame
+	public GameObject WallPref;
+	
+	
+	void Start()
+	{
+		Instantiate(WallPref,transform.position, Quaternion.Euler(90,0,0));
+	}
+	
+	
 	void Update () {
 	
 	

@@ -63,14 +63,34 @@ public class Pathfinding : MonoBehaviour {
 //		else return true;
 		Vector3 cell = fromCell + direction;
 		bool isContains = EmptySpaces.Contains(fromCell);
+		//UNITY BUG HERE
+//		int index3 = -1;
+//		if (EmptySpaces.Contains(fromCell)) isContains = true;
+//		else foreach (Vector3 itm in EmptySpaces)
+//			if (itm == fromCell) isContains = true;
+			
+			
 		int index = GetIndexFromDirection(direction);
-		if (!isContains || ((int[])WallsConfig[EmptySpaces.IndexOf(fromCell)])[index] != 1) return true;
+		
+		//UNITY BUG HERE
+		int index2 = -1;
+		if (EmptySpaces.Contains(fromCell)) index2 = EmptySpaces.IndexOf(fromCell);
+//		else foreach (Vector3 itm in EmptySpaces)
+//			if (itm == fromCell) index2 = EmptySpaces.IndexOf(itm);
+			
+		if (!isContains || ((int[])WallsConfig[index2])[index] != 1) return true;
 		else return false;
 		}
 		public bool inUse(Vector3 cell)
 		{
 			if (usedCells.Contains(cell)) return true;
-			else return false;
+			else 
+			// UNITY BUG HERE
+//			foreach (Vector3 itm in usedCells)
+//			if (itm == cell) return true;
+			//
+			return false;
+			
 		}
 	
 	//public class Way : Array{}

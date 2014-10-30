@@ -17,8 +17,8 @@ public class Bot : MonoBehaviour {
 	bool isHit;
 	public float distanceOfView = 0.5f;
 	ArrayList ExplorableSpaces = new ArrayList();
-	public GameObject CubePref;
-	public GameObject MarkedCubePref;
+	public GameObject WallPref;
+	public GameObject WallColoredPref;
 	Pathfinding PF;
 	bool isPFWorking = false;
 	ArrayList MapBlocks = new ArrayList();
@@ -238,19 +238,42 @@ public class Bot : MonoBehaviour {
 //			
 //			step++;
 //		}
+
+		//UNITY BUG HERE
+		int index = -1;
+		if (EmptySpaces.Contains(transform.position)) index = EmptySpaces.IndexOf(transform.position);
+//		else foreach (Vector3 itm in EmptySpaces)
+//			if (itm == transform.position) 
+//				{
+//				index = EmptySpaces.IndexOf(itm);
+//				Debug.LogWarning("UNITY BUG");
+//				}
+			
 		if (Physics.Raycast(transform.position, direction, 1f)) {
 		//draw wall
-			((int[]) WallsConfig[EmptySpaces.IndexOf(transform.position)])[GetIndexFromDirection(direction)] = 1;
+			((int[]) WallsConfig[index])[GetIndexFromDirection(direction)] = 1;
+			Debug.Log("traget-Wall"+(transform.position+direction.normalized).ToString());
 		}
 		else {
 			//add new cell
-			((int[]) WallsConfig[EmptySpaces.IndexOf(transform.position)])[GetIndexFromDirection(direction)] = 0;
-			Vector3 target = transform.position + direction.normalized;
+//			foreach (Vector3 itm in EmptySpaces)
+//				Debug.Log("a "+itm.ToString());
+//			Debug.Log("a transform"+transform.position.ToString());
+//			Debug.Log (EmptySpaces.IndexOf(transform.position).ToString()+
+//				" "+EmptySpaces.Contains(transform.position).ToString());
+			
+			((int[]) WallsConfig[index])[GetIndexFromDirection(direction)] = 0;
+			
+			Vector3 target = transform.position + new Vector3((int)direction.x, (int)direction.y,
+				(int)direction.z);
+			//Debug.Log("traget-Free"+target.ToString());
+			Debug.Log("direction norm"+direction.ToString());
 			if (!EmptySpaces.Contains(target))
 			{
 			EmptySpaces.Add(target);
 			WallsConfig.Add(new int[] {-1,-1,-1,-1,-1,-1});
 			ExplorableSpaces.Add (target);
+				//Debug.Log("traget-added");
 			}
 		} 
 		
@@ -302,15 +325,30 @@ public class Bot : MonoBehaviour {
 	
 	void BuildMap()
 	{
-//	foreach (Vector3 cell in EmptySpaces)
-//					for (int ddd =0; ddd<6; ddd++)
-//					if (((int)WallsConfig[EmptySpaces.IndexOf(cell)])[ddd] == 1 && 
-//						!MapBlocks.Contains(cell+))
-//						{
-//						Instantiate(CubePref, new Vector3(cell.x+freespace,cell.y,cell.z), Quaternion.identity);
-//						MapBlocks.Add(cell);
-//						}
+	foreach (Vector3 cell in EmptySpaces)
+					for (int ddd =0; ddd<6; ddd++)
+					if (((int[])WallsConfig[EmptySpaces.IndexOf(cell)])[ddd] == 1 && 
+				    !MapBlocks.Contains(((int)cell.x).ToString()+" "+
+				                    ((int)cell.y).ToString()+" "+((int)cell.z).ToString()+" "+ddd.ToString()))
+						{
+						Instantiate(WallPref, new Vector3(cell.x+freespace,cell.y,cell.z), GetRotationFromDirections(ddd));
+						Instantiate(WallColoredPref, new Vector3(cell.x,cell.y,cell.z), GetRotationFromDirections(ddd));
+					MapBlocks.Add(((int)cell.x).ToString()+" "+
+				              ((int)cell.y).ToString()+" "+((int)cell.z).ToString()+" "+ddd.ToString());
+						//foreach (string item in MapBlocks)
+						//	Debug.Log("MapBlocks: "+item);
+						}
 
+	}
+	
+	Quaternion GetRotationFromDirections(int ddd)
+	{
+		if (ddd == 0)return Quaternion.Euler(0,90,0);
+		else if (ddd == 1)return Quaternion.Euler(0,-90,0);
+		else if (ddd == 5)return Quaternion.Euler(0,180,0);
+		else if (ddd == 3)return Quaternion.Euler(90,0,0);
+		else if (ddd == 2)return Quaternion.Euler(-90,0,0);
+		else return Quaternion.identity;
 	}
 	
 
